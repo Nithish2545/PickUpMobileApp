@@ -1,11 +1,18 @@
-import React from 'react'
-import { Text } from 'react-native'
-import UidUI from './UidUI'
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import UserDetails from './UserDetails';
+import DetailScreen from './DetailScreen';
 
-function App() {
+const Stack = createStackNavigator();
+
+export default function App() {
   return (
-    <UidUI/>
-  )
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="UserDetails" component={UserDetails} />
+        <Stack.Screen name="DetailScreen" component={DetailScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
-
-export default App

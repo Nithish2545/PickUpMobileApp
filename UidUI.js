@@ -34,12 +34,15 @@ function UidUI() {
       const uidExists = result.data.find((d) => d.UID == data.uid);
 
       if (!uidExists) {
-        setError("uid", { type: "manual", message: "UID not found" });
+        setError("uid", {
+          type: "manual",
+          message: "Invalid UID: No ID has been generated for pickup confirmation.",
+        });
         return;
       }
       console.log(uidExists);
     } catch (error) {
-      setError("uid", { type: "manual", message: "Something went wrong" });
+      setError("uid", { type: "manual", message: "Something went wrong. Please try again later." });
     } finally {
       setLoading(false); // End loading
     }
