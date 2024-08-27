@@ -153,22 +153,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f0f2f5",
-    padding: 20,
   },
   stickyHeader: {
-    position: "absolute",
-    backgroundColor:"#f0f2f5",
+    position: "sticky",
     top: 0,
     left: 0,
     right: 0,
+    backgroundColor:"#f0f2f5",
     padding: 10,
     zIndex: 1000,
     height: 60,
-    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     borderBottomColor: "#ccc",
-    justifyContent:"flex-end"
+    borderBottomWidth: 1,
+    justifyContent:"flex-start",
+    paddingHorizontal: 20,
   },
   input: {
     borderColor: "#ccc",
@@ -179,8 +179,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   scrollContainer: {
-    paddingTop: 60, // Adjust for sticky header
-    width: "100%",
+    paddingHorizontal: 20,
+    height:"100vh",
+    overflow:"scroll",
+    paddingTop: 30, // Adjust for sticky header
+    paddingBottom: 150, // Adjust for sticky header
   },
   card: {
     backgroundColor: "white",
@@ -196,7 +199,6 @@ const styles = StyleSheet.create({
   },
   detailSection: {
     marginBottom: 5,
-    gap: 10,
   },
   detailRow: {
     flexDirection: "row",
