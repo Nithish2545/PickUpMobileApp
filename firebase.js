@@ -1,5 +1,6 @@
-import { firebase } from '@react-native-firebase/app';
-import auth from '@react-native-firebase/auth';
+// Import the functions you need from the Firebase SDKs
+import { initializeApp } from 'firebase/app';
+import { getAuth } from '@react-native-firebase/auth'; // Import from @react-native-firebase/auth
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -12,6 +13,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app); // Use @react-native-firebase/auth
+
+export { auth };
