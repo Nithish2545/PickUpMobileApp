@@ -8,10 +8,10 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
-  Image,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
 import { useNavigation } from '@react-navigation/native';
+
+const API_URL = "https://sheet.best/api/sheets/27658b60-3dca-4cc2-bd34-f65124b8a27d"; // Update this URL with your actual API URL
 
 function UserDetails() {
   const navigation = useNavigation();
@@ -19,24 +19,16 @@ function UserDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [assignments, setAssignments] = useState({});
-  const [dropdownOpenStates, setDropdownOpenStates] = useState({});
   const [pickupDate, setPickupDate] = useState(""); // State for Pickup Date
-  const [items, setItems] = useState([
-    { label: "Unassigned", value: "Unassigned" },
-    { label: "John Doe", value: "John Doe" },
-    { label: "Jane Smith", value: "Jane Smith" },
-  ]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const result = await axios.get(
-          "https://sheet.best/api/sheets/27658b60-3dca-4cc2-bd34-f65124b8a27d"
-        );
+        const result = await axios.get(API_URL);
         setUserData(result.data);
       } catch (error) {
-        console.error("Error fetching data from Google Sheets API:", error);
+        console.error("Error fetching data from API:", error);
         setError("Error fetching data. Please try again.");
       } finally {
         setLoading(false);
@@ -46,24 +38,53 @@ function UserDetails() {
     fetchData();
   }, []);
 
+  const updatePickUpPerson = async (awbNumber, pickUpPerson) => {
+      try {
+      const url = `${"https://sheetdb.io/api/v1/rqf7dg6nls7b3"}/id/${awbNumber}`;
+      const response = await axios.patch(url, {
+        data: {
+          PickUpPersonName: pickUpPerson
+        }
+      }, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status !== 200) {
+        throw new Error("Failed to update the row");
+      }
+
+      console.log("PickUpPersonName updated successfully");
+    } catch (error) {
+      console.error("Error updating PickUpPersonName:", error);
+    }
+  };
+
   const handleAccept = (index) => {
     console.log("Accepted user at index:", index);
   };
 
-  const handleAssignmentChange = (index, value) => {
-    setAssignments({ ...assignments, [index]: value });
-  };
-
-  const handleDropdownOpen = (index, open) => {
-    setDropdownOpenStates((prevState) => ({
-      ...prevState,
-      [index]: open,
+  const handleAssignmentChange = async (index, value) => {
+    const selectedUser = userData[index];
+    const awbNumber = selectedUser.AWB_NUMBER;
+    await updatePickUpPerson(awbNumber, value);
+    // Update the local state
+    setAssignments((prevAssignments) => ({
+      ...prevAssignments,
+      [index]: value,
     }));
+
+    // Update the data on the server
+    updatePickUpPerson(awbNumber, value);
   };
 
   const handleCardPress = (user) => {
     navigation.navigate('DetailScreen', { user });
   };
+
+  const pickupPersons = ["Unassigned", "anish","sathish"];
 
   return (
     <View style={styles.container}>
@@ -116,29 +137,26 @@ function UserDetails() {
                   >
                     <Text style={styles.buttonText}>Call</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => handleAccept(index)}
-                  >
-                    <Image
-                      style={styles.image}
-                      source={{ uri: "/assets/rootIcon.svg" }}
-                    />
-                  </TouchableOpacity>
                 </View>
                 <View style={styles.assignmentSection}>
                   <Text style={styles.label}>Assign:</Text>
-                  <DropDownPicker
-                    open={dropdownOpenStates[index] || false}
-                    value={assignments[index] || "Unassigned"}
-                    items={items}
-                    setOpen={(open) => handleDropdownOpen(index, open)}
-                    setValue={(value) => handleAssignmentChange(index, value)}
-                    setItems={setItems}
-                    style={styles.dropdown}
-                    containerStyle={styles.dropdownContainer}
-                    dropDownContainerStyle={styles.dropdownMenu}
-                  />
+                  <View style={styles.radioGroup}>
+                    {pickupPersons.map((person) => (
+                      <TouchableOpacity
+                        key={person}
+                        style={styles.radioButton}
+                        onPress={() => handleAssignmentChange(index, person)}
+                      >
+                        <View
+                          style={[
+                            styles.radioCircle,
+                            assignments[index] === person && styles.selectedRadioCircle,
+                          ]}
+                        />
+                        <Text style={styles.radioText}>{person}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
@@ -159,7 +177,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor:"#f0f2f5",
+    backgroundColor: "#f0f2f5",
     padding: 10,
     zIndex: 1000,
     height: 60,
@@ -167,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomColor: "#ccc",
     borderBottomWidth: 1,
-    justifyContent:"flex-start",
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
   },
   input: {
@@ -179,9 +197,9 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   scrollContainer: {
+    overflow: "scroll",
+    height: "100vh",
     paddingHorizontal: 20,
-    height:"100vh",
-    overflow:"scroll",
     paddingTop: 30, // Adjust for sticky header
     paddingBottom: 150, // Adjust for sticky header
   },
@@ -239,10 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  image: {
-    width: 18,
-    height: 18,
-  },
   assignmentSection: {
     flexDirection: "row",
     alignItems: "center",
@@ -250,16 +264,29 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
   },
-  dropdown: {
-    backgroundColor: "#f0f2f5",
-    borderWidth: 0,
-    minHeight: 30,
+  radioGroup: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  dropdownContainer: {
-    width: 150,
+  radioButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10,
   },
-  dropdownMenu: {
-    backgroundColor: "#f0f2f5",
+  radioCircle: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#555",
+    marginRight: 5,
+  },
+  selectedRadioCircle: {
+    backgroundColor: "#4b0082",
+  },
+  radioText: {
+    fontSize: 14,
+    color: "#333",
   },
 });
 

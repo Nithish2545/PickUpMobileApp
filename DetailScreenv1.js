@@ -7,50 +7,13 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
   TextInput,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import axios from "axios";
 
-// Update this URL with your actual sheetdb.io API URL
-const API_URL = "https://sheetdb.io/api/v1/rqf7dg6nls7b3";
-
-const updateRowByAWB = async (awbNumber, updatedFields) => {
-
-  console.log(typeof awbNumber);
-  try {
-    // Construct the URL with the AWB Number
-    const url = `${API_URL}/id/${awbNumber}`;
-
-    // Send a PATCH request to update the row
-    const response = await axios.patch(
-      url,
-      {
-        data: {
-          NUMBER_OF_PACKAGES:updatedFields.NUMBER_OF_PACKAGES,
-          IMAGE_LIST_OF_FORM: "null",
-          IMAGE_COMPLETE_PRODUCTS_PICTURE:"null",
-          IMAGE_FORM:"null",
-          WEIGHTAPX:updatedFields.WEIGHTAPX
-        },
-      },
-      {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.status !== 200) {
-      throw new Error("Failed to update the row");
-    }
-
-    console.log("Row updated successfully");
-  } catch (error) {
-    console.error("Error updating row:", error);
-  }
-};
+// Get screen height for vh-like behavior
+const screenHeight = Dimensions.get("window").height;
 
 function DetailScreen({ route }) {
   const { user } = route.params;
@@ -77,17 +40,19 @@ function DetailScreen({ route }) {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const details = {
-      WEIGHTAPX: weight,
-      IMAGE_FORM: productImage,
-      IMAGE_COMPLETE_PRODUCTS_PICTURE: weightImage,
-      IMAGE_LIST_OF_FORM: additionalImage,
-      NUMBER_OF_PACKAGES: numPackages,
+      AWB_NUMBER: user.AWB_NUMBER,
+      NAME: user.NAME,
+      ADDRESS: user.ADDRESS,
+      WEIGHTAPX: weight, // Use the updated weight
+      PREFERRED_DATE_TIME: user.PREFERRED_DATE_TIME,
+      NUM_PACKAGES: numPackages,
+      PRODUCT_IMAGE: productImage,
+      WEIGHT_IMAGE: weightImage,
+      ADDITIONAL_IMAGE: additionalImage,
     };
-
-    await updateRowByAWB(user.AWB_NUMBER, details);
-    // Optionally, reset the form or navigate back
+    console.log("Submitted Details:", details);
   };
 
   return (

@@ -1,40 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import auth from '@react-native-firebase/auth'; // Import from @react-native-firebase/auth
+import { useForm, Controller } from 'react-hook-form';
+import staticData from './staticData.json'; // Import static data
 
 const SignIn = ({ navigation }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [confirm, setConfirm] = useState(null);
+  const { control, handleSubmit, formState: { errors } } = useForm();
 
-  const handleSendOTP = async () => {
-    if (phoneNumber.length === 0) {
-      Alert.alert('Error', 'Please enter a phone number.');
-      return;
-    }
+  const onSubmit = (data) => {
+    const user = staticData.users.find(
+      (user) => user.phoneNumber === data.phoneNumber && user.password === data.password
+    );
 
-    try {
-      console.log(phoneNumber)
-      const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
-      setConfirm(confirmation);
-      Alert.alert('OTP Sent', 'A verification code has been sent to your phone.');
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
-
-  const handleConfirmOTP = async () => {
-    if (verificationCode.length === 0) {
-      Alert.alert('Error', 'Please enter the verification code.');
-      return;
-    }
-
-    try {
-      await confirm.confirm(verificationCode);
-      Alert.alert('Success', 'Phone number verified!');
-      navigation.navigate('HomePage'); // Navigate to home page
-    } catch (error) {
-      Alert.alert('Error', error.message);
+    if (user) {
+      const roleMessage = user.role === 'admin' ? 'You are signed in as Admin!' : 'You are signed in as Pickup!';
+      Alert.alert('Success', roleMessage);
+      navigation.navigate('UserDetails'); // Navigate to home page
+    } else {
+      Alert.alert('Error', 'Invalid phone number or password.');
     }
   };
 
@@ -42,35 +24,55 @@ const SignIn = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Sign In</Text>
       <View style={styles.form}>
-        {confirm ? (
-          <>
+        <Controller
+          control={control}
+          name="phoneNumber"
+          rules={{
+            required: 'Phone number is required',
+            pattern: {
+              value: /^[0-9]{10}$/,
+              message: 'Phone number must be 10 digits'
+            }
+          }}
+          render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              style={styles.input}
-              placeholder="Enter verification code"
-              keyboardType="number-pad"
-              value={verificationCode}
-              onChangeText={setVerificationCode}
-              placeholderTextColor="#9CA3AF"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleConfirmOTP}>
-              <Text style={styles.buttonText}>Confirm OTP</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <TextInput
-              style={styles.input}
+              style={[styles.input, errors.phoneNumber && styles.errorInput]}
               placeholder="Enter your phone number"
               keyboardType="phone-pad"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              placeholderTextColor="#9CA3AF"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
             />
-            <TouchableOpacity style={styles.button} onPress={handleSendOTP}>
-              <Text style={styles.buttonText}>Send OTP</Text>
-            </TouchableOpacity>
-          </>
-        )}
+          )}
+        />
+        {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber.message}</Text>}
+        
+        <Controller
+          control={control}
+          name="password"
+          rules={{
+            required: 'Password is required',
+            pattern: {
+              value: /^[\w!@#$%^&*()_+{}\[\]:;"'<>,.?/\|`~]{6,}$/,
+              message: 'Password must be at least 6 characters long'
+            }
+          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, errors.password && styles.errorInput]}
+              placeholder="Enter your password"
+              secureTextEntry
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
+        {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
+
+        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+          <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.footer}>
         <Text style={styles.signUpText}>
@@ -113,6 +115,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     fontSize: 16,
   },
+  errorInput: {
+    borderColor: '#FF0000',
+  },
   button: {
     backgroundColor: '#6D28D9',
     paddingVertical: 14,
@@ -144,6 +149,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6D28D9',
     textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: '#FF0000',
+    marginBottom: 8,
   },
 });
 

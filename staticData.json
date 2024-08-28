@@ -1,0 +1,20 @@
+{
+    "users": [
+      {
+        "phoneNumber": "1234567890",
+        "password": "password123",
+        "role": "admin"
+      },
+      {
+        "phoneNumber": "0987654321",
+        "password": "pickup123",
+        "role": "pickup"
+      },
+      {
+        "phoneNumber": "1122334455",
+        "password": "pickup456",
+        "role": "pickup"
+      }
+    ]
+  }
+  
