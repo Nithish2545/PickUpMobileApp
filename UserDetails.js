@@ -27,6 +27,7 @@ function UserDetails() {
       try {
         const result = await axios.get(API_URL);
         setUserData(result.data);
+        console.log(result)
       } catch (error) {
         console.error("Error fetching data from API:", error);
         setError("Error fetching data. Please try again.");
@@ -39,7 +40,8 @@ function UserDetails() {
   }, []);
 
   const updatePickUpPerson = async (awbNumber, pickUpPerson) => {
-      try {
+    console.log(awbNumber,pickUpPerson)
+    try {
       const url = `${"https://sheetdb.io/api/v1/rqf7dg6nls7b3"}/id/${awbNumber}`;
       const response = await axios.patch(url, {
         data: {
@@ -115,10 +117,10 @@ function UserDetails() {
                     <Text style={styles.label}>Name:</Text>
                     <Text style={styles.value}>{user.NAME || ""}</Text>
                   </View>
-                  <View style={styles.detailRow}>
+                  {/* <View style={styles.detailRow}>
                     <Text style={styles.label}>Address:</Text>
                     <Text style={styles.value}>{user.ADDRESS || ""}</Text>
-                  </View>
+                  </View> */}
                   <View style={styles.detailRow}>
                     <Text style={styles.label}>Weight Apx:</Text>
                     <Text style={styles.value}>{user.WEIGHTAPX || ""}</Text>
@@ -126,7 +128,7 @@ function UserDetails() {
                   <View style={styles.detailRow}>
                     <Text style={styles.label}>Preferred Date&Time:</Text>
                     <Text style={styles.value}>
-                      {user.PREFERRED_DATE_TIME || ""}
+                      {user.PICKUP_DATETIME || ""}
                     </Text>
                   </View>
                 </View>
