@@ -3,18 +3,20 @@
       {
         "phoneNumber": "1234567890",
         "password": "password123",
-        "role": "admin"
+        "role": "admin",
+        "PickUpPersonName":"deepak"
       },
       {
         "phoneNumber": "0987654321",
         "password": "pickup123",
-        "role": "pickup"
+        "role": "pickup",
+        "PickUpPersonName":"anish"
       },
       {
         "phoneNumber": "1122334455",
         "password": "pickup456",
-        "role": "pickup"
+        "role": "pickup",
+        "PickUpPersonName":"sathish"
       }
     ]
   }
-  

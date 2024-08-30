@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   View,
   Text,
@@ -9,16 +10,19 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
+
 import * as ImagePicker from "expo-image-picker";
+
 import axios from "axios";
 
 // Update this URL with your actual sheetdb.io API URL
-const API_URL = "https://sheetdb.io/api/v1/rqf7dg6nls7b3";
+const API_URL = "https://sheetdb.io/api/v1/prfchcqerqk07";
 
 const updateRowByAWB = async (awbNumber, updatedFields) => {
 
   console.log(typeof awbNumber);
   try {
+
     // Construct the URL with the AWB Number
     const url = `${API_URL}/id/${awbNumber}`;
 
@@ -31,7 +35,8 @@ const updateRowByAWB = async (awbNumber, updatedFields) => {
           IMAGE_LIST_OF_FORM: "null",
           IMAGE_COMPLETE_PRODUCTS_PICTURE:"null",
           IMAGE_FORM:"null",
-          WEIGHTAPX:updatedFields.WEIGHTAPX
+          WEIGHTAPX:updatedFields.WEIGHTAPX,
+          STATUS:"PICKUP COMPLETED"
         },
       },
       {
@@ -108,7 +113,7 @@ function DetailScreen({ route }) {
           placeholder="Enter weight"
         />
         <Text style={styles.label}>Preferred Date&Time:</Text>
-        <Text style={styles.value}>{user.PREFERRED_DATE_TIME}</Text>
+        <Text style={styles.value}>{user.PICKUP_DATETIME}</Text>
         <View style={styles.packageContainer}>
           <Text style={styles.label}>Number of Packages:</Text>
           <View style={styles.counterContainer}>
@@ -129,6 +134,7 @@ function DetailScreen({ route }) {
         </View>
 
         <Text style={styles.label}>Product Image:</Text>
+
         <View style={styles.buttonWrapper}>
           <Button
             title="Upload Image"

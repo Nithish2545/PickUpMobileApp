@@ -12,11 +12,10 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import debounce from "lodash.debounce";
+import debounce from 'lodash.debounce';
 
-const API_URL =
-  "https://sheet.best/api/sheets/27658b60-3dca-4cc2-bd34-f65124b8a27d";
-const SHEETDB_API_URL = "https://sheetdb.io/api/v1/prfchcqerqk07";
+const API_URL = "https://sheet.best/api/sheets/27658b60-3dca-4cc2-bd34-f65124b8a27d";
+const SHEETDB_API_URL = "https://sheetdb.io/api/v1/rqf7dg6nls7b3";
 
 function UserDetails() {
   const navigation = useNavigation();
@@ -69,22 +68,13 @@ function UserDetails() {
     fetchData();
   }, []);
 
-  const updatePickUpPersonWithRetry = async (
-    awbNumber,
-    pickUpPerson,
-    retryCount = 0
-  ) => {
+  const updatePickUpPersonWithRetry = async (awbNumber, pickUpPerson, retryCount = 0) => {
     try {
       const url = `${SHEETDB_API_URL}/id/${awbNumber}`;
       const response = await axios.patch(
         url,
         { data: { PickUpPersonName: pickUpPerson } },
-        {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
+        { headers: { Accept: "application/json", "Content-Type": "application/json" } }
       );
 
       if (response.status !== 200) {
@@ -95,14 +85,8 @@ function UserDetails() {
     } catch (error) {
       if (error.response && error.response.status === 429 && retryCount < 3) {
         console.warn("Rate limit exceeded, retrying...");
-        await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (retryCount + 1))
-        ); // Exponential backoff
-        await updatePickUpPersonWithRetry(
-          awbNumber,
-          pickUpPerson,
-          retryCount + 1
-        );
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+        await updatePickUpPersonWithRetry(awbNumber, pickUpPerson, retryCount + 1);
       } else {
         console.error("Error updating PickUpPersonName:", error);
       }
@@ -157,10 +141,7 @@ function UserDetails() {
           value={pickupDate}
           onChangeText={setPickupDate}
         />
-        <TouchableOpacity
-          style={styles.signOutButtonContainer}
-          onPress={signOut}
-        >
+        <TouchableOpacity style={styles.signOutButtonContainer} onPress={signOut}>
           <Text style={styles.signOutButton}>Sign Out</Text>
         </TouchableOpacity>
       </View>
@@ -174,16 +155,6 @@ function UserDetails() {
             <TouchableOpacity key={index} onPress={() => handleCardPress(user)}>
               <View style={styles.card}>
                 <View style={styles.detailSection}>
-                  {user.STATUS =="PENDING" ? (
-                    <View style={styles.pending}>
-                      <Text style={styles.text}>{user.STATUS}</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.status}>
-                      <Text style={styles.text}>{user.STATUS}</Text>
-                    </View>
-                  )}
-
                   <View style={styles.detailRow}>
                     <Text style={styles.label}>AWB No:</Text>
                     <Text style={styles.value}>{user.AWB_NUMBER || ""}</Text>
@@ -371,22 +342,6 @@ const styles = StyleSheet.create({
     color: "red",
     textAlign: "center",
     marginTop: 20,
-  },
-  status: {
-    padding: 3,
-    backgroundColor: "green",
-    color: "white",
-    alignSelf: "flex-end",
-  },
-  text: {
-    color: "white",
-    fontSize: "13px",
-  },
-  pending: {
-    padding: 3,
-    backgroundColor: "red",
-    color: "white",
-    alignSelf: "flex-end",
   },
 });
 
