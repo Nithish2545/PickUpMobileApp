@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,19 +9,15 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-
 import * as ImagePicker from "expo-image-picker";
-
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Update this URL with your actual sheetdb.io API URL
 const API_URL = "https://sheetdb.io/api/v1/prfchcqerqk07";
 
 const updateRowByAWB = async (awbNumber, updatedFields) => {
-
-  console.log(typeof awbNumber);
   try {
-
     // Construct the URL with the AWB Number
     const url = `${API_URL}/id/${awbNumber}`;
 
@@ -31,12 +26,14 @@ const updateRowByAWB = async (awbNumber, updatedFields) => {
       url,
       {
         data: {
-          NUMBER_OF_PACKAGES:updatedFields.NUMBER_OF_PACKAGES,
+          NUMBER_OF_PACKAGES: updatedFields.NUMBER_OF_PACKAGES,
           IMAGE_LIST_OF_FORM: "null",
-          IMAGE_COMPLETE_PRODUCTS_PICTURE:"null",
-          IMAGE_FORM:"null",
-          WEIGHTAPX:updatedFields.WEIGHTAPX,
-          STATUS:"PICKUP COMPLETED"
+          IMAGE_COMPLETE_PRODUCTS_PICTURE: "null",
+          IMAGE_FORM: "null",
+          WEIGHTAPX: updatedFields.WEIGHTAPX,
+          STATUS: "PICKUP COMPLETED",
+          ACTUAL_WEIGHT: updatedFields.ACTUAL_WEIGHT,
+          ACTUAL_NUMBER_OF_PACKAGES: updatedFields.ACTUAL_NUMBER_OF_PACKAGES,
         },
       },
       {
@@ -58,12 +55,35 @@ const updateRowByAWB = async (awbNumber, updatedFields) => {
 };
 
 function DetailScreen({ route }) {
-  const { user } = route.params;
+  const { user } = route.params; // Assuming other user data like AWB, NAME, ADDRESS, etc., is passed via route params
   const [numPackages, setNumPackages] = useState(1);
   const [productImage, setProductImage] = useState(null);
   const [weightImage, setWeightImage] = useState(null);
   const [additionalImage, setAdditionalImage] = useState(null);
   const [weight, setWeight] = useState(user.WEIGHTAPX || ""); // Initialize with user's weight
+  const [actualWeight, setActualWeight] = useState("");
+  const [actualNumPackages, setActualNumPackages] = useState("");
+
+  // State to store user info from AsyncStorage
+  const [storedUser, setStoredUser] = useState({ name: "", role: "" });
+
+  useEffect(() => {
+    // Function to load user data from AsyncStorage
+    const loadUserData = async () => {
+      try {
+        const storedName = await AsyncStorage.getItem("user_name");
+        const storedRole = await AsyncStorage.getItem("user_role");
+
+        if (storedName && storedRole) {
+          setStoredUser({ name: storedName, role: storedRole });
+        }
+      } catch (error) {
+        console.error("Error loading user data from AsyncStorage:", error);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const incrementPackages = () => setNumPackages(numPackages + 1);
   const decrementPackages = () =>
@@ -89,6 +109,8 @@ function DetailScreen({ route }) {
       IMAGE_COMPLETE_PRODUCTS_PICTURE: weightImage,
       IMAGE_LIST_OF_FORM: additionalImage,
       NUMBER_OF_PACKAGES: numPackages,
+      ACTUAL_WEIGHT: actualWeight,
+      ACTUAL_NUMBER_OF_PACKAGES: actualNumPackages,
     };
 
     await updateRowByAWB(user.AWB_NUMBER, details);
@@ -133,42 +155,73 @@ function DetailScreen({ route }) {
           </View>
         </View>
 
-        <Text style={styles.label}>Product Image:</Text>
+        {/* Conditionally render image uploads if user is not Deepak with admin role */}
+        {!(
+          storedUser.role === "admin" &&
+          storedUser.name.toLowerCase() === "deepak"
+        ) && (
+          <>
+            <Text style={styles.label}>Product Image:</Text>
+            <View style={styles.buttonWrapper}>
+              <Button
+                title="Upload Image"
+                onPress={() => pickImage(setProductImage)}
+                color="#6a1b9a" // Purple color for button
+              />
+            </View>
+            {productImage && (
+              <Image source={{ uri: productImage }} style={styles.image} />
+            )}
 
-        <View style={styles.buttonWrapper}>
-          <Button
-            title="Upload Image"
-            onPress={() => pickImage(setProductImage)}
-            color="#6a1b9a" // Purple color for button
-          />
-        </View>
-        {productImage && (
-          <Image source={{ uri: productImage }} style={styles.image} />
-        )}
+            <Text style={styles.label}>Weight Image:</Text>
+            <View style={styles.buttonWrapper}>
+              <Button
+                title="Upload Image"
+                onPress={() => pickImage(setWeightImage)}
+                color="#6a1b9a" // Purple color for button
+              />
+            </View>
+            {weightImage && (
+              <Image source={{ uri: weightImage }} style={styles.image} />
+            )}
 
-        <Text style={styles.label}>Weight Image:</Text>
-        <View style={styles.buttonWrapper}>
-          <Button
-            title="Upload Image"
-            onPress={() => pickImage(setWeightImage)}
-            color="#6a1b9a" // Purple color for button
-          />
-        </View>
-        {weightImage && (
-          <Image source={{ uri: weightImage }} style={styles.image} />
+            <Text style={styles.label}>Additional Image:</Text>
+            <View style={styles.buttonWrapper}>
+              <Button
+                title="Upload Image"
+                onPress={() => pickImage(setAdditionalImage)}
+                color="#6a1b9a" // Purple color for button
+              />
+            </View>
+            {additionalImage && (
+              <Image source={{ uri: additionalImage }} style={styles.image} />
+            )}
+          </>
         )}
+        {console.log(storedUsr)}
+        {/* Conditionally render additional fields if user is Deepak with admin role */}
+        {storedUser.role === "admin" &&
+          storedUser.name.toLowerCase() === "deepak" && (
+            <>
+              <Text style={styles.label}>Actual Weight:</Text>
+              <TextInput
+                style={styles.input}
+                value={actualWeight}
+                onChangeText={setActualWeight}
+                keyboardType="numeric"
+                placeholder="Enter actual weight"
+              />
 
-        <Text style={styles.label}>Additional Image:</Text>
-        <View style={styles.buttonWrapper}>
-          <Button
-            title="Upload Image"
-            onPress={() => pickImage(setAdditionalImage)}
-            color="#6a1b9a" // Purple color for button
-          />
-        </View>
-        {additionalImage && (
-          <Image source={{ uri: additionalImage }} style={styles.image} />
-        )}
+              <Text style={styles.label}>Actual Number of Packages:</Text>
+              <TextInput
+                style={styles.input}
+                value={actualNumPackages}
+                onChangeText={setActualNumPackages}
+                keyboardType="numeric"
+                placeholder="Enter actual number of packages"
+              />
+            </>
+          )}
 
         <View style={styles.buttonWrapper1}>
           <Button
@@ -217,33 +270,30 @@ const styles = StyleSheet.create({
   counterContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    marginTop: 10,
   },
   counterButton: {
-    backgroundColor: "#d1c4e9", // Light purple for counter buttons
+    backgroundColor: "#6a1b9a", // Purple color for buttons
     padding: 10,
     borderRadius: 5,
+    marginHorizontal: 10,
   },
   counterText: {
-    fontSize: 18,
+    color: "#fff", // White text color
     fontWeight: "bold",
-    color: "#6a1b9a", // Purple color for counter text
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginVertical: 10,
+    fontSize: 16,
   },
   buttonWrapper: {
     marginVertical: 10,
-    borderRadius: 5,
-    overflow: "hidden",
   },
   buttonWrapper1: {
     marginVertical: 10,
-    borderRadius: 5,
-    overflow: "hidden",
-    marginBottom: 80,
+    marginBottom: 100,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    marginVertical: 10,
   },
 });
 

@@ -48,7 +48,6 @@ function UserDetails() {
         console.error("Error fetching user role:", error);
       }
     };
-
     fetchUserRole();
   }, []);
 
@@ -65,7 +64,6 @@ function UserDetails() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -74,6 +72,7 @@ function UserDetails() {
     pickUpPerson,
     retryCount = 0
   ) => {
+
     try {
       const url = `${SHEETDB_API_URL}/id/${awbNumber}`;
       const response = await axios.patch(
@@ -164,6 +163,9 @@ function UserDetails() {
           <Text style={styles.signOutButton}>Sign Out</Text>
         </TouchableOpacity>
       </View>
+      <View>
+        <Text>{userRole}</Text>
+      </View>
       {loading ? (
         <ActivityIndicator size="large" color="#6f42c1" />
       ) : error ? (
@@ -174,7 +176,7 @@ function UserDetails() {
             <TouchableOpacity key={index} onPress={() => handleCardPress(user)}>
               <View style={styles.card}>
                 <View style={styles.detailSection}>
-                  {user.STATUS =="PENDING" ? (
+                  {user.STATUS == "PENDING" ? (
                     <View style={styles.pending}>
                       <Text style={styles.text}>{user.STATUS}</Text>
                     </View>
@@ -183,7 +185,6 @@ function UserDetails() {
                       <Text style={styles.text}>{user.STATUS}</Text>
                     </View>
                   )}
-
                   <View style={styles.detailRow}>
                     <Text style={styles.label}>AWB No:</Text>
                     <Text style={styles.value}>{user.AWB_NUMBER || ""}</Text>
@@ -217,6 +218,7 @@ function UserDetails() {
                     <Text style={styles.buttonText}>Open Map</Text>
                   </TouchableOpacity>
                 </View>
+                {console.log(userRole)}
                 {(userRole === "admin" || userRole === "deepak") && (
                   <View style={styles.assignmentSection}>
                     <Text style={styles.label}>Assign:</Text>
